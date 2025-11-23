@@ -1,66 +1,49 @@
 import streamlit as st
-from auth.auth_utils import register_user, login_user, logout_user
-import supabase
 
-def clean_error(err):
-    """Remove or convert any non-ASCII characters in error messages."""
-    if not err:
-        return ""
-    try:
-        return str(err).encode("utf-8", errors="ignore").decode("utf-8")
-    except Exception:
-        return "An unknown error occurred."
+st.set_page_config(page_title="AI Carbon Calculator", layout="wide")
 
-st.set_page_config(
-    page_title="AI Carbon Calculator",
-    layout="wide"
-)
-st.title(" Welcome to the AI Carbon Footprint App")
+st.markdown("""
+    <style>
+        [data-testid="stSidebarNav"] {display: none;}
+    </style>
+""", unsafe_allow_html=True)
 
-# session state initialization
+
+
+# Initialize session state
+if "is_authenticated" not in st.session_state:
+    st.session_state["is_authenticated"] = False
+
 if "user" not in st.session_state:
     st.session_state["user"] = None
 
-# if user already logged in, show dashboard link
-if st.session_state['user']:
-    st.sidebar.success(f'Logged in as: {st.session_state['user']['email']}')
+# ------------- SIDEBAR NAVIGATION -------------
+
+st.sidebar.title("🌱 Navigation")
+
+# If user is logged in
+if st.session_state["is_authenticated"] and st.session_state["user"]:
+    
+    user_email = st.session_state["user"]["email"]
+    st.sidebar.success(f"Logged in as: {user_email}")
+
+    st.sidebar.page_link("pages/01_Home.py", label="🏠 Home")
+    st.sidebar.page_link("pages/03_Dashboard.py", label="📊 Dashboard")
+    st.sidebar.page_link("pages/04_Carbon_Calculator.py", label="🧮 Carbon Calculator")
+    st.sidebar.page_link("pages/05_Global_Comparison.py", label="🌍 Global Comparison")
+    st.sidebar.page_link("pages/06_AI_Recommendations.py", label="🤖 AI Recommendations")
+
     if st.sidebar.button("Logout"):
-        logout_user()
-        st.session_state['user'] = None
+        st.session_state.clear()
         st.rerun()
 
+# If user is logged out → show only login page
 else:
-    # Tabs for login and Register
-    tab1, tab2 = st.tabs(["Login", "Register"])
+    st.sidebar.page_link("pages/01_Home.py", label="🏠 Home")
+    st.sidebar.page_link("pages/02_Login.py", label="🔐 Login / Register")
+
+# Main placeholder
+st.title("AI Carbon Footprint App")
+st.write("Use the sidebar to navigate.")
 
 
-    # Login Tab
-    with tab1:
-        st.subheader("Login to your account")
-
-        email = st.text_input("Email", key='login_email')
-        password = st.text_input("Password", type = "password", key="login_password")
-
-        if st.button('Login'):
-            user, error = login_user(email, password)
-            if error:
-                st.error(f"Login failed: {clean_error(error)}")
-            
-            else:
-                st.session_state["user"] = {"email":email}
-                st.success("Login successful! Redirecting...")
-                st.rerun()
-        
-    # Register Tab
-    with tab2:
-        st.subheader("Create a new account")
-
-        reg_email = st.text_input("Email", key="register_email")
-        reg_password = st.text_input("Password",type="password")
-
-        if st.button("Register"):
-            user, error = register_user(reg_email, reg_password)
-            if error:
-                st.error(f"Registration failed: {clean_error(error)}")
-            else:
-                st.success("Registration successful! Please log in.")

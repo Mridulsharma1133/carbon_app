@@ -35,7 +35,6 @@ data = {
 }
 
 df = pd.DataFrame(data)
-
 # --- Calculate target emissions ---
 def calc_emission(row):
     total = (
