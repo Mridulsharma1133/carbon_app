@@ -9,7 +9,7 @@ if not st.session_state.get("is_authenticated"):
 
 user_email = st.session_state["user"]["email"]
 
-st.title("🌍 Global CO₂ Emission Comparison")
+st.title("🌍 Global CO₂ per person Emission Comparison")
 st.write(f"Hello **{user_email}**, see how your carbon footprint compares globally:")
 
 # ---------------- FETCH USER LAST EMISSION ----------------
